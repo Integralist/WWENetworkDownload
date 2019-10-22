@@ -107,7 +107,7 @@ def generate_ffmpeg_command(episode: str, network: wwe.Network) -> str:
     return ffmpeg_command
 
 
-def process(episodes: List[str], debug: bool):
+def process(episodes: List[str]):
     """Authenticate user, acquire video stream, download video(s).
 
     Utilizes basic chunking algorithm to prevent abusing CPU.
@@ -138,30 +138,30 @@ def process(episodes: List[str], debug: bool):
 
                 # run the shell command directly via the /bin/sh executable
                 # and do it in a subprocess for the purposes of parallelism
-                process = subprocess.Popen(
+                p = subprocess.Popen(
                     cmd,
                     shell=True,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )
-                processes.append(process)
+                processes.append(p)
 
-            print(f"wait for {chunk} processes to finish.")
+            print(f"waiting for {chunk} processes to finish.")
 
-            for process in processes:
-                process.communicate()
+            for p in processes:
+                p.communicate()
         except IndexError:
             # account for uneven lists of files where we generate a partial
             # list of processes but then get an error from referencing an
             # index that doesn't exist. this allows us to complete the
             # download for that partial list of processes.
             if len(processes) > 0:
-                for process in processes:
-                    process.communicate()
+                for p in processes:
+                    p.communicate()
 
         start = end
 
-    print("finished downloading.")
+    print("\nfinished downloading.")
 
 
 def parse_flags() -> argparse.Namespace:
@@ -182,9 +182,6 @@ def parse_flags() -> argparse.Namespace:
     parser.add_argument(
         "-f", "--files", help="File with list of links", default=None
     )
-    parser.add_argument(
-        "-d", "--debug", help="Dry-run.", type=bool, default=False
-    )
 
     return parser.parse_args()
 
@@ -192,4 +189,4 @@ def parse_flags() -> argparse.Namespace:
 flags = parse_flags()
 user, password = credentials(flags.user, flags.password)
 episodes = normalize_links(flags)
-process(episodes, flags.debug)
+process(episodes)

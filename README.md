@@ -14,7 +14,7 @@ The code was originally written by [@freyta](https://github.com/freyta/) and I w
 ## Usage
 
 ```
-usage: main.py [-h] [-u USER] [-p PASSWORD] [-l LINK] [-f FILES] [-d DEBUG]
+usage: main.py [-h] [-u USER] [-p PASSWORD] [-l LINK] [-f FILES]
 
 Download videos from the WWE Network
 
@@ -26,8 +26,6 @@ optional arguments:
   -l LINK, --link LINK  Video link to download.
   -f FILES, --files FILES
                         File with list of links
-  -d DEBUG, --debug DEBUG
-                        Dry-run.
 ```
 
 ## Examples
@@ -35,7 +33,6 @@ optional arguments:
 - [Login credentials provided by environment variables](#login-credentials-provided-by-environment-variables)
 - [Login credentials provided by CLI flags](#login-credentials-provided-by-CLI-flags)
 - [Multiple videos downloaded in parallel](#multiple-videos-downloaded-in-parallel)
-- [Debug Mode](#debug-mode)
 
 ### Login credentials provided by environment variables:
 
@@ -65,12 +62,14 @@ In the above example, `files.txt` is a file consisting of multiple video URLs (o
 
 > Note: we use a process 'pool' to prevent creating more subprocesses than we have cores.
 
-### Debug Mode
+## TODO
 
-To see a dry-run of the `ffmpeg` command that will be produced, pass the 'debug' flag:
+Add a `-d, --debug` dry-run flag, like so:
 
-```bash
-python3 main.py -u foo -p bar -l /episode/The-War-Begins-9762 -d true
+```
+parser.add_argument(
+    "-d", "--debug", help="Dry-run.", type=bool, default=False
+)
 ```
 
-> Note: for details of the various CLI flags use `--help` or `-h`.
+Need to figure out the best approach to this feature (i.e. how do we want to represent the data in dry-run mode)?
