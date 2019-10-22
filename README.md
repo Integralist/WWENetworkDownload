@@ -73,3 +73,13 @@ parser.add_argument(
 ```
 
 Need to figure out the best approach to this feature (i.e. how do we want to represent the data in dry-run mode)?
+
+---
+
+Add stdout printing of the download file size so people can see how the progress is going.
+
+A temporary solution is to `brew install watch` and to run:
+
+```bash
+watch -n 1 ls -lah '*.mp4'
+```
