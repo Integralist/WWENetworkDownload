@@ -6,7 +6,7 @@ import multiprocessing
 import os
 import subprocess
 import sys
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 # third party modules
 
@@ -107,15 +107,19 @@ def generate_ffmpeg_command(episode: str, network: wwe.Network) -> str:
     return ffmpeg_command
 
 
-def process(episodes: List[str]):
+def process(episodes: List[str], debug: bool, verbose: bool):
     """Authenticate user, acquire video stream, download video(s).
 
     Utilizes basic chunking algorithm to prevent abusing CPU.
     """
 
+    output: Dict[str, int] = {}
+    if not verbose:
+        output = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
+
     network = wwe.Network(user, password)
     network.login()
-    print("\nauthenticated successfully")
+    print("\nauthenticated successfully\n")
 
     # TODO: maybe refactor the following logic to use proper pooling algorithm
     # as implemented by concurrent.futures.ProcessPoolExecutor
@@ -136,28 +140,35 @@ def process(episodes: List[str]):
             for i in range(start, end):
                 cmd = generate_ffmpeg_command(episodes[i], network)
 
-                # run the shell command directly via the /bin/sh executable
-                # and do it in a subprocess for the purposes of parallelism
-                p = subprocess.Popen(
-                    cmd,
-                    shell=True,
-                    stdout=subprocess.DEVNULL,
-                    stderr=subprocess.DEVNULL,
-                )
-                processes.append(p)
+                if debug:
+                    processes.append(cmd)
+                else:
+                    # run the shell command directly via the /bin/sh executable
+                    # and do it in a subprocess for the purposes of parallelism
+                    p = subprocess.Popen(  # type: ignore
+                        cmd, shell=True, **output
+                    )
+                    processes.append(p)  # type: ignore
 
             print(f"waiting for {chunk} processes to finish.")
 
-            for p in processes:
-                p.communicate()
+            for p in processes:  # type: ignore
+                if debug:
+                    print("\n", p)
+                else:
+                    p.communicate()
+
         except IndexError:
             # account for uneven lists of files where we generate a partial
             # list of processes but then get an error from referencing an
             # index that doesn't exist. this allows us to complete the
             # download for that partial list of processes.
             if len(processes) > 0:
-                for p in processes:
-                    p.communicate()
+                for p in processes:  # type: ignore
+                    if debug:
+                        print("\n", p)
+                    else:
+                        p.communicate()
 
         start = end
 
@@ -182,6 +193,12 @@ def parse_flags() -> argparse.Namespace:
     parser.add_argument(
         "-f", "--files", help="File with list of links", default=None
     )
+    parser.add_argument(
+        "-d", "--debug", help="Dry-run.", type=bool, default=False
+    )
+    parser.add_argument(
+        "-v", "--verbose", help="Verbose output.", type=bool, default=False
+    )
 
     return parser.parse_args()
 
@@ -189,4 +206,4 @@ def parse_flags() -> argparse.Namespace:
 flags = parse_flags()
 user, password = credentials(flags.user, flags.password)
 episodes = normalize_links(flags)
-process(episodes)
+process(episodes, flags.debug, flags.verbose)

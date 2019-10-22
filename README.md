@@ -26,6 +26,10 @@ optional arguments:
   -l LINK, --link LINK  Video link to download.
   -f FILES, --files FILES
                         File with list of links
+  -d DEBUG, --debug DEBUG
+                        Dry-run.
+  -v VERBOSE, --verbose VERBOSE
+                        Verbose output.
 ```
 
 ## Examples
@@ -33,6 +37,8 @@ optional arguments:
 - [Login credentials provided by environment variables](#login-credentials-provided-by-environment-variables)
 - [Login credentials provided by CLI flags](#login-credentials-provided-by-CLI-flags)
 - [Multiple videos downloaded in parallel](#multiple-videos-downloaded-in-parallel)
+- [Debug Mode](#debug-mode)
+- [Verbose Mode](#verbose-mode)
 
 ### Login credentials provided by environment variables:
 
@@ -62,19 +68,29 @@ In the above example, `files.txt` is a file consisting of multiple video URLs (o
 
 > Note: we use a process 'pool' to prevent creating more subprocesses than we have cores.
 
+### Debug Mode
+
+Debug mode will print the `ffmpeg` command that the application generates for accessing a specified video.
+
+No downloading of the stream URL will occur.
+
+```bash
+python3 main.py -u foo -p bar -l <url> -f files.txt -d true
+```
+
+> Note: omit the `-d, --debug` flag if you don't require debug mode.
+
+### Verbose Mode
+
+Verbose mode will print the output from the generated `ffmpeg` command which streams the provided video(s).
+
+```bash
+python3 main.py -u foo -p bar -l <url> -f files.txt -v true
+```
+
+> Note: omit the `-v, --verbose` flag if you don't require verbose mode.
+
 ## TODO
-
-Add a `-d, --debug` dry-run flag, like so:
-
-```
-parser.add_argument(
-    "-d", "--debug", help="Dry-run.", type=bool, default=False
-)
-```
-
-Need to figure out the best approach to this feature (i.e. how do we want to represent the data in dry-run mode)?
-
----
 
 Add stdout printing of the download file size so people can see how the progress is going.
 
