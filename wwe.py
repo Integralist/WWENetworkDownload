@@ -23,6 +23,18 @@ REALM_HEADERS = {
 DICE_MOBILE_API_KEY = "640a69fb-68b1-472c-ba4b-36f50288c984"
 
 
+def normalize_filename(f: str) -> str:
+    """Replaces non-alphanumerical characters within a given filename."""
+
+    def safe_char(c):
+        if c.isalnum():
+            return c
+        else:
+            return "_"
+
+    return "".join(safe_char(c) for c in f).rstrip("_")
+
+
 class Episode:
     """Create instance of a episode video type."""
 
@@ -91,15 +103,7 @@ class Generic:
         if not self.entry.get("title"):
             raise Exception("don't recognize this event type")
 
-        # TODO: use normalize_title rather than doing this here
-        file_name = (
-            self.entry["title"]
-            .replace(" ", "_")
-            .replace("&", "and")
-            .replace(":", "-")
-        )
-
-        return file_name
+        return normalize_filename(self.entry["title"])
 
 
 class Network:
@@ -169,7 +173,6 @@ class Network:
         entry = api_link["entries"][0]["item"]
 
         episode = self._episode_factory(entry)
-        episode.filename()
 
         return (
             self._video_url(

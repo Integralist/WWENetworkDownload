@@ -1,26 +1,21 @@
 # standard library modules
 
 import argparse
+import math
+import multiprocessing
 import os
 import subprocess
 import sys
 from typing import List, Tuple
 
-# application modules
+# third party modules
 
 import wwe
 
+# constants
 
-def normalize_filename(f: str) -> str:
-    """Replaces non-alphanumerical characters within a given filename."""
-
-    def safe_char(c):
-        if c.isalnum():
-            return c
-        else:
-            return "_"
-
-    return "".join(safe_char(c) for c in f).rstrip("_")
+CORES = multiprocessing.cpu_count()
+CHUNK = round(CORES / 2)
 
 
 def credentials(user: str, password: str) -> Tuple[str, str]:
@@ -92,54 +87,81 @@ def normalize_links(flags: argparse.Namespace) -> List[str]:
 
         episodes[i] = ep
 
-    # TODO: don't iterate twice but pass direct to singular process()
     return episodes
 
 
+def generate_ffmpeg_command(episode: str, network: wwe.Network) -> str:
+    video_info, title = network.get_video_info(episode)
+    stream_url = network.hls_url(video_info)
+    user_agent = "WWE/4.0.13 (Linux;Android 9) ExoPlayerLib/2.9.3"
+
+    # generate ffmpeg command to download the video via the stream URL
+    ffmpeg_command = (
+        f'ffmpeg -user_agent "{user_agent}" -i "'
+        + stream_url
+        + '" -c copy '
+        + title
+        + ".mp4 -y"
+    )
+
+    return ffmpeg_command
+
+
 def process(episodes: List[str], debug: bool):
-    """Authenticate user, acquire video stream, generate ffmpeg command."""
+    """Authenticate user, acquire video stream, download video(s).
+
+    Utilizes basic chunking algorithm to prevent abusing CPU.
+    """
 
     network = wwe.Network(user, password)
     network.login()
-    print("authenticated successfully")
+    print("\nauthenticated successfully")
 
-    processes = []
+    # TODO: maybe refactor the following logic to use proper pooling algorithm
+    # as implemented by concurrent.futures.ProcessPoolExecutor
 
-    for i, episode in enumerate(episodes):
-        video_info, title = network.get_video_info(episode)
-        stream_url = network.hls_url(video_info)
-        user_agent = "WWE/4.0.13 (Linux;Android 9) ExoPlayerLib/2.9.3"
+    divider = CHUNK
+    if len(episodes) < divider:
+        # reduce the divider to prevent using too few cores
+        divider = 2
 
-        # generate ffmpeg command to download the video via the stream URL
-        ffmpeg_command = (
-            f'ffmpeg -user_agent "{user_agent}" -i "'
-            + stream_url
-            + '" -c copy '
-            + normalize_filename(title)
-            + ".mp4 -y"
-        )
+    start = 0
+    for n in range(0, CHUNK):
+        chunk = math.ceil(len(episodes) / divider)
+        end = start + chunk
 
-        print(f"about to download video: {title}")
+        try:
+            processes = []
 
-        if not debug:
-            # run the shell command directly via the /bin/sh executable
-            # and do it in a subprocess for the purposes of parallelism.
-            process = subprocess.Popen(
-                ffmpeg_command,
-                shell=True,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            processes.append(process)
-        else:
-            print(ffmpeg_command)
+            for i in range(start, end):
+                cmd = generate_ffmpeg_command(episodes[i], network)
 
-    print(f"wait for {len(episodes)} processes to finish.")
+                # run the shell command directly via the /bin/sh executable
+                # and do it in a subprocess for the purposes of parallelism
+                process = subprocess.Popen(
+                    cmd,
+                    shell=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                )
+                processes.append(process)
 
-    for process in processes:
-        process.communicate()
+            print(f"wait for {chunk} processes to finish.")
 
-    print("all done!")
+            for process in processes:
+                process.communicate()
+        except IndexError:
+            # account for uneven lists of files where we generate a partial
+            # list of processes but then get an error from referencing an
+            # index that doesn't exist. this allows us to complete the
+            # download for that partial list of processes.
+            if len(processes) > 0:
+                for process in processes:
+                    process.communicate()
+
+        start = end
+
+    print("finished downloading.")
 
 
 def parse_flags() -> argparse.Namespace:
