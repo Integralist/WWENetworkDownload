@@ -124,14 +124,18 @@ def process(episodes: List[str], debug: bool, verbose: bool):
     # TODO: maybe refactor the following logic to use proper pooling algorithm
     # as implemented by concurrent.futures.ProcessPoolExecutor
 
+    print(f"Number of videos: {len(episodes)}")
+
     divider = CHUNK
-    if len(episodes) < divider:
-        # reduce the divider to prevent using too few cores
-        divider = 2
 
     start = 0
     for n in range(0, CHUNK):
         chunk = math.ceil(len(episodes) / divider)
+
+        if len(episodes) <= divider:
+            # reduce the divider to prevent using too few cores
+            chunk = len(episodes)
+
         end = start + chunk
 
         try:
@@ -150,7 +154,8 @@ def process(episodes: List[str], debug: bool, verbose: bool):
                     )
                     processes.append(p)  # type: ignore
 
-            print(f"waiting for {chunk} processes to finish.")
+            print(f"\nGenerated subprocesses: {chunk}.")
+            print("Waiting for subprocesses to complete.")
 
             for p in processes:  # type: ignore
                 if debug:
@@ -164,6 +169,8 @@ def process(episodes: List[str], debug: bool, verbose: bool):
             # index that doesn't exist. this allows us to complete the
             # download for that partial list of processes.
             if len(processes) > 0:
+                print(f"\nGenerated subprocesses: {len(processes)}.")
+                print("Waiting for subprocesses to complete.")
                 for p in processes:  # type: ignore
                     if debug:
                         print("\n", p)
