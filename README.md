@@ -30,6 +30,8 @@ optional arguments:
                         Dry-run.
   -v VERBOSE, --verbose VERBOSE
                         Verbose output.
+  -i INDEX, --index INDEX
+                        Index filenames.
 ```
 
 ## Examples
@@ -37,6 +39,7 @@ optional arguments:
 - [Login credentials provided by environment variables](#login-credentials-provided-by-environment-variables)
 - [Login credentials provided by CLI flags](#login-credentials-provided-by-CLI-flags)
 - [Multiple videos downloaded in parallel](#multiple-videos-downloaded-in-parallel)
+- [Insert numeric index in filenames](#insert-numerical-index-in-filenames)
 - [Debug Mode](#debug-mode)
 - [Verbose Mode](#verbose-mode)
 
@@ -67,6 +70,28 @@ python3 main.py -u foo -p bar -l <url> -f files.txt
 In the above example, `files.txt` is a file consisting of multiple video URLs (one per line).
 
 > Note: we use a process 'pool' to prevent creating more subprocesses than we have cores.
+
+### Insert numeric index in filenames
+
+If you're using the `-f, --files` flag to download multiple videos at once, then those videos could be part of a show (e.g. The Monday Night Wars) where the episodes are in a sequential order.
+
+If you include the `-i, --index` flag with your command, then we'll presume the order in the `-f, --files` file will be in order, and we'll simply insert a numerical index to the output filename.
+
+For example, if you provided `--files videos.txt` and your `videos.txt` contained the following...
+
+```
+https://watch.wwe.com/episode/The-War-Begins-9762
+https://watch.wwe.com/episode/The-Rise-of-the-nWo-9779
+https://watch.wwe.com/episode/Embracing-a-New-Attitude-9078
+```
+
+Then we would download the videos and output the filenames as:
+
+```
+1. The_War_Begins.mp4
+2. The_Rise_of_the_nwo.mp4
+3. Embracing_a_New_Attitude.mp4
+```
 
 ### Debug Mode
 

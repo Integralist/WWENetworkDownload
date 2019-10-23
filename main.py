@@ -17,6 +17,10 @@ import wwe
 CORES = multiprocessing.cpu_count()
 CHUNK = round(CORES / 2)
 
+# globals
+
+episode_count = 0
+
 
 def credentials(user: str, password: str) -> Tuple[str, str]:
     """Extracts credentials from either CLI flags or environment variables."""
@@ -90,10 +94,18 @@ def normalize_links(flags: argparse.Namespace) -> List[str]:
     return episodes
 
 
-def generate_ffmpeg_command(episode: str, network: wwe.Network) -> str:
+def generate_ffmpeg_command(
+    episode: str, network: wwe.Network, index: bool
+) -> str:
+    global episode_count
+    episode_count += 1
+
     video_info, title = network.get_video_info(episode)
     stream_url = network.hls_url(video_info)
     user_agent = "WWE/4.0.13 (Linux;Android 9) ExoPlayerLib/2.9.3"
+
+    if index:
+        title = f"{episode_count}. {title}"
 
     # generate ffmpeg command to download the video via the stream URL
     ffmpeg_command = (
@@ -107,12 +119,11 @@ def generate_ffmpeg_command(episode: str, network: wwe.Network) -> str:
     return ffmpeg_command
 
 
-def process(episodes: List[str], debug: bool, verbose: bool):
+def process(episodes: List[str], debug: bool, verbose: bool, index: bool):
     """Authenticate user, acquire video stream, download video(s).
 
     Utilizes basic chunking algorithm to prevent abusing CPU.
     """
-
     output: Dict[str, int] = {}
     if not verbose:
         output = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
@@ -142,7 +153,7 @@ def process(episodes: List[str], debug: bool, verbose: bool):
             processes = []
 
             for i in range(start, end):
-                cmd = generate_ffmpeg_command(episodes[i], network)
+                cmd = generate_ffmpeg_command(episodes[i], network, index)
 
                 if debug:
                     processes.append(cmd)
@@ -206,6 +217,9 @@ def parse_flags() -> argparse.Namespace:
     parser.add_argument(
         "-v", "--verbose", help="Verbose output.", type=bool, default=False
     )
+    parser.add_argument(
+        "-i", "--index", help="Index filenames.", type=bool, default=False
+    )
 
     return parser.parse_args()
 
@@ -213,4 +227,4 @@ def parse_flags() -> argparse.Namespace:
 flags = parse_flags()
 user, password = credentials(flags.user, flags.password)
 episodes = normalize_links(flags)
-process(episodes, flags.debug, flags.verbose)
+process(episodes, flags.debug, flags.verbose, flags.index)
