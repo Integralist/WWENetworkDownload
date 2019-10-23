@@ -39,7 +39,7 @@ optional arguments:
 - [Login credentials provided by environment variables](#login-credentials-provided-by-environment-variables)
 - [Login credentials provided by CLI flags](#login-credentials-provided-by-CLI-flags)
 - [Multiple videos downloaded in parallel](#multiple-videos-downloaded-in-parallel)
-- [Insert numeric index in filenames](#insert-numerical-index-in-filenames)
+- [Insert numeric index in filenames](#insert-numeric-index-in-filenames)
 - [Debug Mode](#debug-mode)
 - [Verbose Mode](#verbose-mode)
 
