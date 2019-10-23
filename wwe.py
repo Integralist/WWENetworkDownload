@@ -3,11 +3,10 @@
 # standard library modules
 
 import sys
+import time
 from typing import Dict, Tuple, Union
 
 # third party modules
-
-import arrow
 
 import requests
 
@@ -42,22 +41,18 @@ class Episode:
         self.entry = entry
 
     def filename(self) -> str:
-        ep_num = self.entry["episodeNumber"]
-
-        if self.entry["episodeNumber"] < 10:
-            ep_num = "0" + str(self.entry["episodeNumber"])
-
-        file_date = arrow.get(
-            self.entry["firstBroadcastDate"], "YYYY-MM-DDTHH:mm:ssZ"
-        ).format("M-DD-YYYY")
-
-        file_name = "{} {} - S{}E{} - {}".format(
-            self.entry["customFields"]["Franchise"],
-            self.entry["episodeName"],
-            self.entry["releaseYear"],
-            ep_num,
-            file_date,
+        organization = self.entry["customFields"]["Franchise"]
+        episode_num = self.entry["episodeNumber"]
+        normalized_num = (
+            "0" + str(episode_num) if episode_num < 10 else episode_num
         )
+        episode_title = (self.entry["episodeName"],)
+        series_year = self.entry["releaseYear"]
+        broadcast = self.entry["firstBroadcastDate"]
+        parsed_date = time.strptime(broadcast, "%Y-%m-%dT%H:%M:%SZ")
+        formatted_date = time.strftime("%Y.%m.%d", parsed_date)
+
+        file_name = f"{formatted_date}. {organization} {episode_title} - S{series_year}E{normalized_num}"  # noqa
 
         return file_name
 
@@ -69,26 +64,21 @@ class PPV:
         self.entry = entry
 
     def filename(self) -> str:
-        # Since we have a PPV get the title and year into variables
+        organization = self.entry["customFields"]["Franchise"]
+        broadcast = self.entry["firstBroadcastDate"]
+        parsed_date = time.strptime(broadcast, "%Y-%m-%dT%H:%M:%SZ")
+        formatted_date = time.strftime("%Y.%m.%d", parsed_date)
         ppv_title = self.entry["episodeName"]
         ppv_year = self.entry["releaseYear"]
 
         # Check if the PPV already has the year in it.
-        # For example "This Tuesday in Texas 1991" has the year,
-        # but "WrestleMania 35" doesn't.
-        # Since we don't want to have "This Tuesday in Texas 1991 1991" as
-        # our filename we will just use the PPV title
-        if str(ppv_year) in ppv_title:
-            file_name = "{} {}".format(
-                self.entry["customFields"]["Franchise"],
-                self.entry["episodeName"],
-            )
-        else:
-            file_name = "{} {} {}".format(
-                self.entry["customFields"]["Franchise"],
-                self.entry["episodeName"],
-                self.entry["releaseYear"],
-            )
+        #
+        # e.g. "This Tuesday in Texas 1991" or "Hardcore Heaven 1995".
+        #
+        # If it does, then we don't add the year to the title.
+        year = f" ({ppv_year})" if str(ppv_year) in ppv_title else ""
+
+        file_name = f"{formatted_date}. {organization} {ppv_title}{year}"
 
         return file_name
 
@@ -103,7 +93,15 @@ class Generic:
         if not self.entry.get("title"):
             raise Exception("don't recognize this event type")
 
-        return normalize_filename(self.entry["title"])
+        title = self.entry["title"]
+        broadcast = self.entry.get("firstBroadcastDate")
+
+        if broadcast:
+            parsed_date = time.strptime(broadcast, "%Y-%m-%dT%H:%M:%SZ")
+            formatted_date = time.strftime("%Y.%m.%d", parsed_date)
+            title = f"{formatted_date}. {title}"
+
+        return normalize_filename(f"{title}")
 
 
 class Network:
