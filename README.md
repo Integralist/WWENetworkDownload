@@ -11,6 +11,12 @@ The code was originally written by [@freyta](https://github.com/freyta/) and I w
 - Python3: `brew install python3`
 - FFMPEG: `brew install ffmpeg`
 
+### Optional
+
+This command-line application offers a `-s, --speak` flag which uses a 'Text-to-Speech' program. You don't have to use this flag to run the command-line application and so the required speech program is not _required_.
+
+By default we use the `say` command which is available by default on macOS. If you're on Linux then you could modify this code to utilize something like `espeak` instead.
+
 ## Usage
 
 ```
