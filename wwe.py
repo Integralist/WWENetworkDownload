@@ -151,7 +151,13 @@ class Network:
             f"https://{host}{path}{video_id}", headers=REALM_HEADERS
         ).json()
 
-        return video_url["playerUrlCallback"]
+        stream_url = video_url.get("playerUrlCallback")
+
+        if not stream_url:
+            print(f"\nFailed to acquire stream URL:\n\n{video_url}")
+            sys.exit(1)
+
+        return stream_url
 
     def _episode_factory(self, entry: Dict) -> Union[Episode, PPV, Generic]:
         if entry["customFields"].get("EventStyle") == "Episodic":
