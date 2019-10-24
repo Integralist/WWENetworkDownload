@@ -52,7 +52,7 @@ class Episode:
         parsed_date = time.strptime(broadcast, "%Y-%m-%dT%H:%M:%SZ")
         formatted_date = time.strftime("%Y.%m.%d", parsed_date)
 
-        file_name = f"{formatted_date}. {organization} {episode_title} - S{series_year}E{normalized_num}"  # noqa
+        file_name = f"{formatted_date} - {organization} S{series_year}E{normalized_num} ({episode_title})"  # noqa
 
         return file_name
 
@@ -78,7 +78,7 @@ class PPV:
         # If it does, then we don't add the year to the title.
         year = f" ({ppv_year})" if str(ppv_year) not in ppv_title else ""
 
-        file_name = f"{formatted_date}. {organization} {ppv_title}{year}"
+        file_name = f"{formatted_date} - {organization} {ppv_title}{year}"
 
         return file_name
 
@@ -99,9 +99,9 @@ class Generic:
         if broadcast:
             parsed_date = time.strptime(broadcast, "%Y-%m-%dT%H:%M:%SZ")
             formatted_date = time.strftime("%Y.%m.%d", parsed_date)
-            title = f"{formatted_date}. {title}"
+            title = f"{formatted_date} - {title}"
 
-        return normalize_filename(f"{title}")
+        return title
 
 
 class Network:
