@@ -130,12 +130,12 @@ def process(episodes: List[str], debug: bool, verbose: bool, index: bool):
 
     network = wwe.Network(user, password)
     network.login()
-    print("\nauthenticated successfully\n")
+    print("\nAuthenticated successfully.\n")
 
     # TODO: maybe refactor the following logic to use proper pooling algorithm
     # as implemented by concurrent.futures.ProcessPoolExecutor
 
-    print(f"Number of videos: {len(episodes)}")
+    print(f"Number of videos: {len(episodes)}.")
 
     divider = CHUNK
 
