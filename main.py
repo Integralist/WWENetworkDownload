@@ -119,13 +119,13 @@ def generate_ffmpeg_command(
     return ffmpeg_command
 
 
-def process(episodes: List[str], debug: bool, verbose: bool, index: bool):
+def process(episodes: List[str], flags: argparse.Namespace):
     """Authenticate user, acquire video stream, download video(s).
 
     Utilizes basic chunking algorithm to prevent abusing CPU.
     """
     output: Dict[str, int] = {}
-    if not verbose:
+    if not flags.verbose:
         output = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
 
     network = wwe.Network(user, password)
@@ -153,9 +153,11 @@ def process(episodes: List[str], debug: bool, verbose: bool, index: bool):
             processes = []
 
             for i in range(start, end):
-                cmd = generate_ffmpeg_command(episodes[i], network, index)
+                cmd = generate_ffmpeg_command(
+                    episodes[i], network, flags.index
+                )
 
-                if debug:
+                if flags.debug:
                     processes.append(cmd)
                 else:
                     # run the shell command directly via the /bin/sh executable
@@ -165,11 +167,16 @@ def process(episodes: List[str], debug: bool, verbose: bool, index: bool):
                     )
                     processes.append(p)  # type: ignore
 
+            if flags.speak:
+                subprocess.call(
+                    "say new batch of subprocesses starting", shell=True
+                )
+
             print(f"\nGenerated subprocesses: {chunk}.")
             print("Waiting for subprocesses to complete.")
 
             for p in processes:  # type: ignore
-                if debug:
+                if flags.debug:
                     print("\n", p)
                 else:
                     p.communicate()
@@ -183,7 +190,7 @@ def process(episodes: List[str], debug: bool, verbose: bool, index: bool):
                 print(f"\nGenerated subprocesses: {len(processes)}.")
                 print("Waiting for subprocesses to complete.")
                 for p in processes:  # type: ignore
-                    if debug:
+                    if flags.debug:
                         print("\n", p)
                     else:
                         p.communicate()
@@ -212,13 +219,16 @@ def parse_flags() -> argparse.Namespace:
         "-f", "--files", help="File with list of links", default=None
     )
     parser.add_argument(
-        "-d", "--debug", help="Dry-run.", type=bool, default=False
+        "-d", "--debug", help="Dry-run displays ffmpeg commands.", type=bool
     )
     parser.add_argument(
-        "-v", "--verbose", help="Verbose output.", type=bool, default=False
+        "-v", "--verbose", help="Verbose prints ffmpeg output.", type=bool
     )
     parser.add_argument(
-        "-i", "--index", help="Index filenames.", type=bool, default=False
+        "-i", "--index", help="Index adds indices to filenames.", type=bool
+    )
+    parser.add_argument(
+        "-s", "--speak", help="Use `say` binary for alerts.", type=bool
     )
 
     return parser.parse_args()
@@ -227,4 +237,4 @@ def parse_flags() -> argparse.Namespace:
 flags = parse_flags()
 user, password = credentials(flags.user, flags.password)
 episodes = normalize_links(flags)
-process(episodes, flags.debug, flags.verbose, flags.index)
+process(episodes, flags)

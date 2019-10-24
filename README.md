@@ -27,11 +27,13 @@ optional arguments:
   -f FILES, --files FILES
                         File with list of links
   -d DEBUG, --debug DEBUG
-                        Dry-run.
+                        Dry-run displays ffmpeg commands.
   -v VERBOSE, --verbose VERBOSE
-                        Verbose output.
+                        Verbose prints ffmpeg output.
   -i INDEX, --index INDEX
-                        Index filenames.
+                        Index adds indices to filenames.
+  -s SPEAK, --speak SPEAK
+                        Use `say` binary for alerts.
 ```
 
 ## Examples
@@ -42,6 +44,7 @@ optional arguments:
 - [Insert numeric index in filenames](#insert-numeric-index-in-filenames)
 - [Debug Mode](#debug-mode)
 - [Verbose Mode](#verbose-mode)
+- [Speak Mode](#speak-mode)
 
 ### Login credentials provided by environment variables:
 
@@ -114,6 +117,16 @@ python3 main.py -u foo -p bar -l <url> -f files.txt -v true
 ```
 
 > Note: omit the `-v, --verbose` flag if you don't require verbose mode.
+
+### Speak Mode
+
+Speak mode will use the `say` command (available by default on macOS) to notify you of important things happening. 
+
+For example, rather than having to keep an eye on your terminal to see when a new batch of subprocesses is opened (e.g. when providing a list of videos using the `-f, --files` flag), you can now use the `-s, --speak` flag and the terminal will speak out loud that this is happening.
+
+```bash
+python3 main.py -u foo -p bar -l <url> -f files.txt -s true
+```
 
 ## TODO
 
