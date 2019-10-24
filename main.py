@@ -112,8 +112,8 @@ def generate_ffmpeg_command(
         f'ffmpeg -user_agent "{user_agent}" -i "'
         + stream_url
         + '" -c copy '
-        + title
-        + ".mp4 -y"
+        + f"'{title}"
+        + ".mp4' -y"
     )
 
     return ffmpeg_command
