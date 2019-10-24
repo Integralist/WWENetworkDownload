@@ -76,7 +76,7 @@ class PPV:
         # e.g. "This Tuesday in Texas 1991" or "Hardcore Heaven 1995".
         #
         # If it does, then we don't add the year to the title.
-        year = f" ({ppv_year})" if str(ppv_year) in ppv_title else ""
+        year = f" ({ppv_year})" if str(ppv_year) not in ppv_title else ""
 
         file_name = f"{formatted_date}. {organization} {ppv_title}{year}"
 
