@@ -197,6 +197,8 @@ def process(episodes: List[str], flags: argparse.Namespace):
 
         start = end
 
+    if flags.speak:
+        subprocess.call("say finished processing", shell=True)
     print("\nfinished downloading.")
 
 
