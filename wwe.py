@@ -93,7 +93,10 @@ class Generic:
         if not self.entry.get("title"):
             raise Exception("don't recognize this event type")
 
-        title = self.entry["title"]
+        # the ffmpeg command we generate uses single quotes, so we need to make
+        # sure we remove any single quotes from the video's title.
+        title = self.entry["title"].replace("'", "")
+
         broadcast = self.entry.get("firstBroadcastDate")
 
         if broadcast:
