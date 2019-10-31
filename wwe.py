@@ -46,7 +46,7 @@ class Episode:
         normalized_num = (
             "0" + str(episode_num) if episode_num < 10 else episode_num
         )
-        episode_title = (self.entry["episodeName"],)
+        episode_title = self.entry["episodeName"]
         series_year = self.entry["releaseYear"]
         broadcast = self.entry["firstBroadcastDate"]
         parsed_date = time.strptime(broadcast, "%Y-%m-%dT%H:%M:%SZ")
