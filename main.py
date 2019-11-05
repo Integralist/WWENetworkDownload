@@ -95,7 +95,7 @@ def normalize_links(flags: argparse.Namespace) -> List[str]:
 
 
 def generate_ffmpeg_command(
-    episode: str, network: wwe.Network, index: bool
+    episode: str, network: wwe.Network, flags: argparse.Namespace
 ) -> str:
     global episode_count
     episode_count += 1
@@ -104,15 +104,19 @@ def generate_ffmpeg_command(
     stream_url = network.hls_url(video_info)
     user_agent = "WWE/4.0.13 (Linux;Android 9) ExoPlayerLib/2.9.3"
 
-    if index:
+    if flags.index:
         title = f"{episode_count}. {title}"
+
+    directory = ""
+    if flags.output:
+        directory = flags.output
 
     # generate ffmpeg command to download the video via the stream URL
     ffmpeg_command = (
         f'ffmpeg -user_agent "{user_agent}" -i "'
         + stream_url
         + '" -c copy '
-        + f"'{title}"
+        + f"'{directory}{title}"
         + ".mp4' -y"
     )
 
@@ -153,9 +157,7 @@ def process(episodes: List[str], flags: argparse.Namespace):
             processes = []
 
             for i in range(start, end):
-                cmd = generate_ffmpeg_command(
-                    episodes[i], network, flags.index
-                )
+                cmd = generate_ffmpeg_command(episodes[i], network, flags)
 
                 if flags.debug:
                     processes.append(cmd)
@@ -231,6 +233,9 @@ def parse_flags() -> argparse.Namespace:
     )
     parser.add_argument(
         "-s", "--speak", help="Use `say` binary for alerts.", type=bool
+    )
+    parser.add_argument(
+        "-o", "--output", help="Directory to place files into.", default=None
     )
 
     return parser.parse_args()

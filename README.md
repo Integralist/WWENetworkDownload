@@ -40,6 +40,8 @@ optional arguments:
                         Index adds indices to filenames.
   -s SPEAK, --speak SPEAK
                         Use `say` binary for alerts.
+  -o OUTPUT, --output OUTPUT
+                        Directory to place files into.
 ```
 
 ## Examples
@@ -47,6 +49,7 @@ optional arguments:
 - [Login credentials provided by environment variables](#login-credentials-provided-by-environment-variables)
 - [Login credentials provided by CLI flags](#login-credentials-provided-by-CLI-flags)
 - [Multiple videos downloaded in parallel](#multiple-videos-downloaded-in-parallel)
+- [Change output directory](#change-output-directory)
 - [Insert numeric index in filenames](#insert-numeric-index-in-filenames)
 - [Debug Mode](#debug-mode)
 - [Verbose Mode](#verbose-mode)
@@ -73,12 +76,20 @@ python3 main.py -u foo -p bar -l <url>
 ### Multiple videos downloaded in parallel
 
 ```bash
-python3 main.py -u foo -p bar -l <url> -f files.txt
+python3 main.py -u foo -p bar -f files.txt
 ```
 
 In the above example, `files.txt` is a file consisting of multiple video URLs (one per line).
 
 > Note: we use a process 'pool' to prevent creating more subprocesses than we have cores.
+
+### Change output directory
+
+If you wish to not have the files downloaded to the same directory as where you are running the CLI command from, then use the `-o, --output` flag to inform the binary of where to download the files to.
+
+```bash
+python3 main.py -u foo -p bar -f files.txt -o /Volumes/MyExternalDrive/...
+```
 
 ### Insert numeric index in filenames
 
@@ -109,7 +120,7 @@ Debug mode will print the `ffmpeg` command that the application generates for ac
 No downloading of the stream URL will occur.
 
 ```bash
-python3 main.py -u foo -p bar -l <url> -f files.txt -d true
+python3 main.py -u foo -p bar -f files.txt -d true
 ```
 
 > Note: omit the `-d, --debug` flag if you don't require debug mode.
@@ -119,7 +130,7 @@ python3 main.py -u foo -p bar -l <url> -f files.txt -d true
 Verbose mode will print the output from the generated `ffmpeg` command which streams the provided video(s).
 
 ```bash
-python3 main.py -u foo -p bar -l <url> -f files.txt -v true
+python3 main.py -u foo -p bar -f files.txt -v true
 ```
 
 > Note: omit the `-v, --verbose` flag if you don't require verbose mode.
@@ -131,7 +142,7 @@ Speak mode will use the `say` command (available by default on macOS) to notify 
 For example, rather than having to keep an eye on your terminal to see when a new batch of subprocesses is opened (e.g. when providing a list of videos using the `-f, --files` flag), you can now use the `-s, --speak` flag and the terminal will speak out loud that this is happening.
 
 ```bash
-python3 main.py -u foo -p bar -l <url> -f files.txt -s true
+python3 main.py -u foo -p bar -f files.txt -s true
 ```
 
 ## TODO
