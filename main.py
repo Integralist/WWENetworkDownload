@@ -132,7 +132,7 @@ def process(episodes: List[str], flags: argparse.Namespace):
     if not flags.verbose:
         output = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL}
 
-    network = wwe.Network(user, password)
+    network = wwe.Network(user, password, flags)
     network.login()
     print("\nAuthenticated successfully.\n")
 

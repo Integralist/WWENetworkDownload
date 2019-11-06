@@ -2,6 +2,8 @@
 
 # standard library modules
 
+import argparse
+import subprocess
 import sys
 import time
 from typing import Dict, Tuple, Union
@@ -86,12 +88,18 @@ class PPV:
 class Generic:
     """Create instance of a generic video type."""
 
-    def __init__(self, entry: Dict):
+    def __init__(self, entry: Dict, flags: argparse.Namespace):
         self.entry = entry
+        self.flags = flags
 
     def filename(self) -> str:
         if not self.entry.get("title"):
-            raise Exception("don't recognize this event type")
+            msg = "don't recognize this event type"
+
+            if self.flags.speak:
+                subprocess.call(f"say error {msg}", shell=True)
+
+            raise Exception(msg)
 
         # the ffmpeg command we generate uses single quotes, so we need to make
         # sure we remove any single quotes from the video's title.
@@ -108,19 +116,25 @@ class Generic:
 
 
 class Network:
-    def __init__(self, user: str, password: str):
+    def __init__(self, user: str, password: str, flags: argparse.Namespace):
         with requests.Session() as self._session:
             self._session.headers.update(HEADERS)
 
         self.user = user
         self.password = password
         self.logged_in = False
+        self.flags = flags
 
     def _update_session(self, auth_token: str):
         """Updates logged-in session to include 'access' token."""
 
         if not auth_token:
-            print("No access token found.")
+            msg = "No access token found."
+            print(msg)
+
+            if self.flags.speak:
+                subprocess.call(f"say error {msg}", shell=True)
+
             sys.exit(1)
 
         self._session.headers.update({"Authorization": f"Bearer {auth_token}"})
@@ -139,6 +153,12 @@ class Network:
 
         if "code" in token_data:
             print(f'ERROR: {token_data.get("messages")}')
+
+            if self.flags.speak:
+                subprocess.call(
+                    f'say error {token_data.get("messages")}', shell=True
+                )
+
             sys.exit(1)
 
         auth_token = token_data.get("authorisationToken")
@@ -157,7 +177,12 @@ class Network:
         stream_url = video_url.get("playerUrlCallback")
 
         if not stream_url:
-            print(f"\nFailed to acquire stream URL:\n\n{video_url}")
+            msg = "Failed to acquire stream URL"
+            print(f"\n{msg}:\n\n{video_url}")
+
+            if self.flags.speak:
+                subprocess.call(f"say {msg}", shell=True)
+
             sys.exit(1)
 
         return stream_url
@@ -168,7 +193,7 @@ class Network:
         elif entry["customFields"].get("EventStyle") == "PPV":
             return PPV(entry)
         else:
-            return Generic(entry)
+            return Generic(entry, self.flags)
 
     def get_video_info(self, link: str) -> Tuple[str, str]:
         """Returns video stream url and video title."""
