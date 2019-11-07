@@ -19,7 +19,7 @@ def normalize_video_filename(video):
     return "".join([replacements.get(c, c) for c in video])
 
 
-def extract_segments():
+def extract_segments(num_lines):
     segments = []
 
     with open("segments.txt") as f:
@@ -28,17 +28,22 @@ def extract_segments():
             start_finish = no_linebreak.split(" ")
 
             for j, segment in enumerate(start_finish):
-                flag = "-ss" if j == 0 else "-to"
+                # if the first line only has a single value
+                if i == 0 and len(start_finish) == 1:
+                    flag = "-to"
+                # if the last line only has a single value
+                elif i == num_lines - 1 and len(start_finish) == 1:
+                    flag = "-ss"
+                else:
+                    flag = "-ss" if j == 0 else "-to"
                 file = "" if len(start_finish) > 1 and j == 0 else f"{i}.mp4"
                 segments.append(f"{flag} {segment} {file}")
 
     return " ".join(segments)
 
 
-def generate_tmp_video_files():
+def generate_tmp_video_files(num_lines):
     tmp_video_files = []
-
-    num_lines = sum(1 for line in open("segments.txt"))
 
     for i in range(num_lines):
         linebreak = "" if i == num_lines - 1 else "\\n"
@@ -47,10 +52,8 @@ def generate_tmp_video_files():
     return "".join(tmp_video_files)
 
 
-def generate_rm_of_tmp_video_files():
+def generate_rm_of_tmp_video_files(num_lines):
     rm_video_files = []
-
-    num_lines = sum(1 for line in open("segments.txt"))
 
     for i in range(num_lines):
         comma = "" if i == num_lines - 1 else ","
@@ -59,15 +62,17 @@ def generate_rm_of_tmp_video_files():
     return "{" + "".join(rm_video_files) + "}"
 
 
+num_lines = sum(1 for line in open("segments.txt"))
+
 args = sys.argv[1:]
 
 video = normalize_video_filename(args[0])
 video_date = args[0].split(" ")[0]
 
-cmd_extract = f"ffmpeg -i {video}.mp4 {extract_segments()}"
-cmd_temp = f'printf "{generate_tmp_video_files()}" > concat.txt'
+cmd_extract = f"ffmpeg -i {video}.mp4 {extract_segments(num_lines)}"
+cmd_temp = f'printf "{generate_tmp_video_files(num_lines)}" > concat.txt'
 cmd_concat = f"ffmpeg -f concat -safe 0 -i concat.txt -c copy {video_date}.mp4"
-cmd_rm = f"rm {generate_rm_of_tmp_video_files()}.mp4 && rm concat.txt"
+cmd_rm = f"rm {generate_rm_of_tmp_video_files(num_lines)}.mp4 && rm concat.txt"
 cmd_done = "say all done"
 
 command = (
@@ -114,7 +119,7 @@ python3 gen.py "1986.10.21 - WWE S1986E41 (Prime Time Wrestling)"
 Calling the Python3 script (as shown above) would produce the following output:
 
 ```bash
-ffmpeg -i 1986.10.21\ -\ WWE\ S1986E41\ \(Prime\ Time\ Wrestling\).mp4 -ss 00:02:04 0.mp4 -ss 00:13:56  -to 00:15:28 1.mp4 -ss 00:21:40  -to 00:22:24 2.mp4 -ss 00:27:31  -to 00:28:33 3.mp4 -ss 00:30:40  -to 00:31:12 4.mp4 -ss 00:37:10  -to 00:39:08 5.mp4 -ss 00:44:39  -to 00:45:22 6.mp4 -ss 00:50:30  -to 00:51:37 7.mp4 -ss 00:53:45 8.mp4 && printf "file '0.mp4'\nfile '1.mp4'\nfile '2.mp4'\nfile '3.mp4'\nfile '4.mp4'\nfile '5.mp4'\nfile '6.mp4'\nfile '7.mp4'\nfile '8.mp4'" > concat.txt && ffmpeg -f concat -safe 0 -i concat.txt -c copy 1986.10.21.mp4 && rm {0,1,2,3,4,5,6,7,8}.mp4 && rm concat.txt && say all done
+ffmpeg -i 1986.10.21\ -\ WWE\ S1986E41\ \(Prime\ Time\ Wrestling\).mp4 -to 00:02:04 0.mp4 -ss 00:13:56  -to 00:15:28 1.mp4 -ss 00:21:40  -to 00:22:24 2.mp4 -ss 00:27:31  -to 00:28:33 3.mp4 -ss 00:30:40  -to 00:31:12 4.mp4 -ss 00:37:10  -to 00:39:08 5.mp4 -ss 00:44:39  -to 00:45:22 6.mp4 -ss 00:50:30  -to 00:51:37 7.mp4 -ss 00:53:45 8.mp4 && printf "file '0.mp4'\nfile '1.mp4'\nfile '2.mp4'\nfile '3.mp4'\nfile '4.mp4'\nfile '5.mp4'\nfile '6.mp4'\nfile '7.mp4'\nfile '8.mp4'" > concat.txt && ffmpeg -f concat -safe 0 -i concat.txt -c copy 1986.10.21.mp4 && rm {0,1,2,3,4,5,6,7,8}.mp4 && rm concat.txt && say all done
 ```
 
 ### What does this script do?
