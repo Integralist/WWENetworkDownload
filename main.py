@@ -244,4 +244,8 @@ def parse_flags() -> argparse.Namespace:
 flags = parse_flags()
 user, password = credentials(flags.user, flags.password)
 episodes = normalize_links(flags)
-process(episodes, flags)
+
+try:
+    process(episodes, flags)
+except Exception as err:
+    print(err)

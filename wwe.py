@@ -177,13 +177,12 @@ class Network:
         stream_url = video_url.get("playerUrlCallback")
 
         if not stream_url:
-            msg = "Failed to acquire stream URL"
-            print(f"\n{msg}:\n\n{video_url}")
+            msg = "failed to acquire stream URL"
 
             if self.flags.speak:
                 subprocess.call(f"say {msg}", shell=True)
 
-            sys.exit(1)
+            raise Exception(f"\nuh-oh! {msg}:\n\n{video_url}")
 
         return stream_url
 
@@ -197,10 +196,14 @@ class Network:
 
     def get_video_info(self, link: str) -> Tuple[str, str]:
         """Returns video stream url and video title."""
-
-        api_link = self._session.get(
+        resp = self._session.get(
             "https://cdn.watch.wwe.com/api/page?path={}".format(link)
-        ).json()
+        )
+
+        api_link = resp.json()
+
+        if resp.status_code != 200:
+            raise Exception(f"\nuh-oh! {link}: {resp.json()}")
 
         entry = api_link["entries"][0]["item"]
 
