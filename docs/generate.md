@@ -329,4 +329,6 @@ To execute the script you would just need to pass in a directory where you want 
 python3 gen.py "/Volumes/SomeHarddrive/Videos/Wrestling/WWF/Shows/Prime Time Wrestling/"
 ```
 
+> Note: make sure inside of that directory is a folder that contains the actual videos to be edited.
+
 Additionally this script expects you to have subdirectories within it, that map to the year of the videos listed. So in the example `segments.txt` file above we have two videos dated from 1987 which means in our output directory we need to make sure there is a folder called `1987` that contains that listed video.
