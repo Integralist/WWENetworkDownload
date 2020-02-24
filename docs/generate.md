@@ -165,7 +165,7 @@ The new `segments.txt` file would look something like the following:
 
 The updated script is as follows:
 
-```
+```python
 import subprocess
 import sys
 
@@ -290,6 +290,7 @@ episodes = parse_segments(extract_episodes())
 
 for episode, flags in episodes.items():
     video = normalize_video_filename(episode)
+    video_name = normalize_video_filename(episode.split("- ")[1])
     video_date = episode.split(" ")[0]
     year = video_date.split(".")[0]
 
@@ -305,7 +306,7 @@ for episode, flags in episodes.items():
     cmd_extract = f"ffmpeg -i {video}.mp4 {flags}"
     cmd_temp = f'printf "{generate_tmp_video_files(num_files)}" > concat.txt'
     cmd_concat = (
-        f"ffmpeg -f concat -safe 0 -i concat.txt -c copy {video_date}.mp4"
+        f"ffmpeg -f concat -safe 0 -i concat.txt -c copy {video_date}-{video_name}-edit.mp4"
     )
     cmd_rm = (
         f"rm {generate_rm_of_tmp_video_files(num_files)}.mp4 && rm concat.txt"
