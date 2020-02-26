@@ -1,5 +1,3 @@
-# standard library modules
-
 import argparse
 import math
 import multiprocessing
@@ -7,8 +5,6 @@ import os
 import subprocess
 import sys
 from typing import Dict, List, Tuple
-
-# third party modules
 
 import wwe
 

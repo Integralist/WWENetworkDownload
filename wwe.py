@@ -1,14 +1,10 @@
 #!/usr/bin/python3
 
-# standard library modules
-
 import argparse
 import subprocess
 import sys
 import time
 from typing import Dict, Tuple, Union
-
-# third party modules
 
 import requests
 
@@ -70,7 +66,11 @@ class PPV:
         broadcast = self.entry["firstBroadcastDate"]
         parsed_date = time.strptime(broadcast, "%Y-%m-%dT%H:%M:%SZ")
         formatted_date = time.strftime("%Y.%m.%d", parsed_date)
-        ppv_title = self.entry["episodeName"]
+
+        # because the ffmpeg command we generate uses single quotes, we need to
+        # be sure that our title doesn't include them.
+        ppv_title = self.entry["episodeName"].replace("'", "_")
+
         ppv_year = self.entry["releaseYear"]
 
         # Check if the PPV already has the year in it.
