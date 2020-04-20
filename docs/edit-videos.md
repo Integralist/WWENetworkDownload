@@ -81,7 +81,6 @@ Here is the Python script:
 ```python
 import argparse
 import subprocess
-import sys
 
 
 def extract_episodes():
@@ -198,8 +197,8 @@ def generate_rm_of_tmp_video_files(num_files):
     return "{" + "".join(rm_video_files) + "}"
 
 
-def main():
-    output_dir = normalize_video_filename(sys.argv[1])
+def main(args: argparse.Namespace):
+    output_dir = normalize_video_filename(args.path)
 
     episodes = parse_segments(extract_episodes())
 
@@ -256,7 +255,7 @@ parser.add_argument('-p', '--path', required=True, help=path_help)
 
 args = parser.parse_args()
 
-main()
+main(args)
 ```
 
 ### What does this script do?
