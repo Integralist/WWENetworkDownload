@@ -100,6 +100,8 @@ def generate_ffmpeg_command(
     stream_url = network.hls_url(video_info)
     user_agent = "WWE/4.0.13 (Linux;Android 9) ExoPlayerLib/2.9.3"
 
+    print(f"\n\t- {title}")
+
     if flags.index:
         title = f"{episode_count}. {title}"
 
