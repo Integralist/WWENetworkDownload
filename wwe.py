@@ -17,8 +17,6 @@ REALM_HEADERS = {
     "realm": "dce.wwe",
 }
 
-DICE_MOBILE_API_KEY = "640a69fb-68b1-472c-ba4b-36f50288c984"
-
 
 def normalize_filename(f: str) -> str:
     """Replaces non-alphanumerical characters within a given filename."""
