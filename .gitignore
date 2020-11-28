@@ -1,6 +1,7 @@
 .mypy_cache
 __pycache__
 files.txt
+segments.txt
 wwe.pyc
 *.mp4
 concat.txt
